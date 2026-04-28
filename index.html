@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>酒品MBTI — 你是哪杯酒？</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:           #09060f;
+      --surface:      rgba(255,255,255,0.05);
+      --surface-hi:   rgba(255,255,255,0.09);
+      --border:       rgba(255,255,255,0.1);
+      --border-gold:  rgba(210,160,80,0.55);
+      --gold:         #d4a85c;
+      --gold-hi:      #edc97a;
+      --gold-dim:     #a07840;
+      --purple:       #a07fd4;
+      --purple-dim:   #7b5faa;
+      --text:         #efe6d4;
+      --text-2:       rgba(239,230,212,0.55);
+      --text-3:       rgba(239,230,212,0.28);
+      --grad-gold:    linear-gradient(135deg, #f0d898, #d4a85c);
+      --grad-cta:     linear-gradient(135deg, #c88a48, #9b72cf);
+      --r-lg: 22px;
+      --r-md: 16px;
+      --r-sm: 12px;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 70% 55% at 8% 8%,   rgba(110,70,200,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 92% 92%, rgba(190,120,50,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 65% at 50% 50%, rgba(70,30,140,0.1)  0%, transparent 70%);
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      min-height: 100vh;
+      padding: 44px 20px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(18px);
+      transition: opacity 0.38s ease, transform 0.38s ease;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    #screen-result {
+      justify-content: flex-start;
+      padding-top: 36px;
+      overflow-y: auto;
+      position: relative;
+    }
+    #screen-result.active { position: relative; }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 36px 28px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    /* ── Typography ── */
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 14px;
+    }
+    .display {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+      background: var(--grad-gold);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .body-md {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--text-2);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 17px 24px;
+      border-radius: var(--r-md);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-cta {
+      background: var(--grad-cta);
+      color: #fff;
+      box-shadow: 0 8px 28px rgba(140,100,210,0.28);
+    }
+    .btn-cta:hover { filter: brightness(1.08); box-shadow: 0 10px 36px rgba(140,100,210,0.38); }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .btn-ghost:hover { border-color: var(--gold-dim); color: var(--text); }
+
+    /* ── Landing ── */
+    .hero-icon {
+      font-size: 68px;
+      display: block;
+      text-align: center;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 0 24px rgba(212,168,92,0.45));
+    }
+    .hero-desc { margin-bottom: 28px; }
+    .meta-row {
+      display: flex;
+      gap: 0;
+      margin-top: 18px;
+    }
+    .meta-row span {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      border-right: 1px solid var(--border);
+      padding: 0 4px;
+    }
+    .meta-row span:last-child { border-right: none; }
+
+    /* ── Progress ── */
+    .progress-wrap { width: 100%; margin-bottom: 18px; }
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+    .progress-track {
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--grad-cta);
+      border-radius: 2px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── Options ── */
+    .question {
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+    .opt {
+      display: block;
+      width: 100%;
+      padding: 18px 44px 18px 20px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.55;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, opacity 0.25s, transform 0.15s;
+      margin-bottom: 12px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .opt:last-of-type { margin-bottom: 0; }
+    .opt:hover { border-color: var(--gold-dim); background: rgba(212,168,92,0.06); }
+    .opt:active { transform: scale(0.99); }
+    .opt.selected {
+      border-color: var(--gold);
+      background: rgba(212,168,92,0.12);
+      pointer-events: none;
+    }
+    .opt.selected::after {
+      content: '✓';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .opt.fade-out { opacity: 0.25; pointer-events: none; }
+
+    /* ── Loading ── */
+    .loading-wrap { text-align: center; }
+    .loading-icon {
+      font-size: 60px;
+      display: block;
+      margin-bottom: 24px;
+      animation: float 2.2s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(-4deg); }
+      50%      { transform: translateY(-12px) rotate(4deg); }
+    }
+    .loading-label {
+      font-size: 16px;
+      color: var(--text-2);
+      animation: breathe 1.8s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100% { opacity: 0.35; }
+      50%      { opacity: 1; }
+    }
+    .loading-dots::after {
+      content: '';
+      animation: dot3 1.8s steps(4,end) infinite;
+    }
+    @keyframes dot3 {
+      0%  { content: ''; }
+      25% { content: '·'; }
+      50% { content: '··'; }
+      75% { content: '···'; }
+    }
+
+    /* ── Result ── */
+    .r-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(212,168,92,0.45);
+      background: rgba(212,168,92,0.08);
+      color: var(--gold-hi);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      margin-bottom: 18px;
+    }
+    .r-title {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.2;
+      background: var(--grad-gold);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .r-subtitle {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+    .r-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .tag {
+      padding: 5px 13px;
+      border-radius: 20px;
+      background: rgba(160,127,212,0.1);
+      border: 1px solid rgba(160,127,212,0.25);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--purple);
+    }
+    .r-desc {
+      font-size: 15px;
+      line-height: 2;
+      color: var(--text);
+    }
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .detail-cell {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 14px;
+    }
+    .detail-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 7px;
+    }
+    .detail-val {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.65;
+    }
+    .share-lbl {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 10px;
+    }
+    .share-box {
+      background: rgba(255,255,255,0.025);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: var(--r-sm);
+      padding: 18px;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text-2);
+      white-space: pre-line;
+      user-select: text;
+      -webkit-user-select: text;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 390px) {
+      .card      { padding: 28px 18px; }
+      .display   { font-size: 32px; }
+      .question  { font-size: 17px; }
+      .r-title   { font-size: 26px; }
+      .opt       { font-size: 14px; padding: 16px 40px 16px 18px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ 首页 ══ -->
+  <div id="screen-landing" class="screen active">
+    <span class="hero-icon">🍷</span>
+    <div class="card">
+      <div class="eyebrow">酒品人格测试</div>
+      <div class="display">你是哪杯酒？</div>
+      <div class="hero-desc">
+        <p class="body-md">12 个问题，找到属于你的那瓶微醺。每杯酒都有自己的性格，就像你一样。</p>
+        <p class="body-md" style="margin-top:10px;margin-bottom:0;">无需注册，测完即得，可分享给朋友对比。</p>
+      </div>
+      <button class="btn btn-cta" onclick="startQuiz()">开始调酒 →</button>
+      <div class="meta-row">
+        <span>共 12 题</span>
+        <span>约 2 分钟</span>
+        <span>16 种结果</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 答题 ══ -->
+  <div id="screen-quiz" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span id="prog-num">1 / 12</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="question" id="q-text"></p>
+      <button class="opt" id="opt-0" onclick="pick(0)"></button>
+      <button class="opt" id="opt-1" onclick="pick(1)"></button>
+    </div>
+  </div>
+
+  <!-- ══ 过渡 ══ -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-wrap">
+      <span class="loading-icon">🍸</span>
+      <p class="loading-label">正在为你调制专属酒单<span class="loading-dots"></span></p>
+    </div>
+  </div>
+
+  <!-- ══ 结果 ══ -->
+  <div id="screen-result" class="screen">
+    <div class="card">
+      <div class="r-badge" id="r-mbti">ENFP</div>
+      <div class="r-title"    id="r-title"></div>
+      <div class="r-subtitle" id="r-subtitle"></div>
+      <div class="r-tags"     id="r-tags"></div>
+      <p   class="r-desc"     id="r-desc"></p>
+      <div class="divider"></div>
+      <div class="detail-grid">
+        <div class="detail-cell">
+          <div class="detail-label">社交风格</div>
+          <div class="detail-val" id="r-social"></div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">爱情风格</div>
+          <div class="detail-val" id="r-love"></div>
+        </div>
+      </div>
+      <div class="share-lbl">分享文案</div>
+      <div class="share-box" id="r-share"></div>
+      <button class="btn btn-cta"   id="btn-copy" onclick="copyShare()">复制分享文案</button>
+      <button class="btn btn-ghost" onclick="resetQuiz()">重新测试</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ─────────────────────────────────────────
+   题目数据  12 道
+───────────────────────────────────────── */
+const QS = [
+  {
+    q: "在一场只认识两三个人的酒局上，你会：",
+    opts: [
+      { t: "很快找到话题，跟全桌新朋友喝成一片", v: "E" },
+      { t: "专注喝酒，除非对方主动来聊才回应",   v: "I" }
+    ]
+  },
+  {
+    q: "酒单上有一款完全没喝过的特调，你会：",
+    opts: [
+      { t: "先问清楚基酒是什么、甜不甜、度数多少",   v: "S" },
+      { t: "被名字吸引，脑子里开始想象喝起来的感觉", v: "N" }
+    ]
+  },
+  {
+    q: "朋友在酒桌上突然情绪低落，你第一反应是：",
+    opts: [
+      { t: "帮他梳理一下到底是什么让他难受，理清楚再说", v: "T" },
+      { t: "安静陪着他，让他先把所有感受说完",           v: "F" }
+    ]
+  },
+  {
+    q: "约好周五晚上出去喝，你通常是：",
+    opts: [
+      { t: "提前选好地方、确认人数、想好喝什么风格", v: "J" },
+      { t: "当天再看心情决定去哪，随缘走到哪算哪",   v: "P" }
+    ]
+  },
+  {
+    q: "喝到微醺，你会变成：",
+    opts: [
+      { t: "更能说话，开始跟所有人称兄道弟",   v: "E" },
+      { t: "话反而变少，沉浸在自己的感觉里", v: "I" }
+    ]
+  },
+  {
+    q: "形容一杯让你惊艳的酒，你会说：",
+    opts: [
+      { t: "「果香很重，有点像荔枝，回口带一点甜」",         v: "S" },
+      { t: "「喝起来像某个夏天，说不清楚，就是那种感觉」", v: "N" }
+    ]
+  },
+  {
+    q: "一瓶好酒几个人分摊，你会：",
+    opts: [
+      { t: "按喝的量公平分，算好人数，不多也不少",   v: "T" },
+      { t: "都是朋友，谁顺手谁付，下次补回来就行", v: "F" }
+    ]
+  },
+  {
+    q: "原本订好的酒吧临时关门，你的反应是：",
+    opts: [
+      { t: "有点扫兴，马上找备选，按原计划推进",   v: "J" },
+      { t: "完全不在意，随便走走看，说不定更好玩", v: "P" }
+    ]
+  },
+  {
+    q: "一个人喝酒和一群人喝酒，你：",
+    opts: [
+      { t: "明显更喜欢一群人，热闹才有喝酒的感觉", v: "E" },
+      { t: "有时候就想一个人，安静喝比什么都舒服", v: "I" }
+    ]
+  },
+  {
+    q: "酒吧出了一款本周限定特调，你会：",
+    opts: [
+      { t: "先确认有没有自己不喜欢的成分，再决定", v: "S" },
+      { t: "「限定」两个字就够了，不试怎么知道",   v: "N" }
+    ]
+  },
+  {
+    q: "喝酒喝到情绪涌上来，你更容易：",
+    opts: [
+      { t: "复盘一下今天哪里出了问题，喝完想清楚再走", v: "T" },
+      { t: "心里话全说出来，就算明天后悔也无所谓",     v: "F" }
+    ]
+  },
+  {
+    q: "酒喝得差不多了，你会：",
+    opts: [
+      { t: "主动说「最后一杯」，时间到了就起身走", v: "J" },
+      { t: "「再一杯」是口头禅，反正也睡不着",     v: "P" }
+    ]
+  }
+];
+
+/* ─────────────────────────────────────────
+   结果数据  16 种
+───────────────────────────────────────── */
+const RS = {
+  INTJ: {
+    title: "单一麦芽威士忌",
+    subtitle: "不需要人懂，但懂你的人会一直留着",
+    desc: "你不是冷漠，只是不愿意把时间浪费在没意义的热闹上。酒局里你可以全程沉默，但一开口往往直接说到点上，让人有点惊讶。你对品质有自己的标准，不将就，不解释，也不需要别人认可。一个人喝酒对你来说从来不是孤独，是难得的清醒时刻。你的内心比外表复杂得多，懂的人不用说，不懂的人说了也白说。",
+    social: "人少才有意思，一对一聊比群聊有价值一百倍",
+    love: "不轻易开口，但认定了就是认定了，不反复",
+    tags: ["#冷静", "#深邃", "#不解释"],
+    share: "做了个酒品MBTI，结果是【单一麦芽威士忌 INTJ】\n不需要人懂，但懂你的人会一直留着。\n你是哪杯？"
+  },
+  INTP: {
+    title: "精酿IPA",
+    subtitle: "喝着喝着就开始分析人生了",
+    desc: "你脑子里随时有五条思路在同时跑，聊天跳跃、喝酒随意，但你其实是桌上最认真在思考的那个。对你来说酒不只是喝的，还是一个触发器，喝到某个节点，思维就开始乱跑。你不擅长维持表面社交，但真正聊得来的人你绝不会放走。你喜欢搞明白事情，哪怕只是今晚这杯酒，为什么苦得刚刚好。",
+    social: "话不多，但一聊起感兴趣的，根本停不下来",
+    love: "慢热，需要对方够聪明，能接住你的思维跳跃",
+    tags: ["#钻研", "#跳脱", "#自成体系"],
+    share: "做了个酒品MBTI，结果是【精酿IPA INTP】\n喝着喝着就开始分析人生了。\n你是哪杯？"
+  },
+  ENTJ: {
+    title: "年份赤霞珠",
+    subtitle: "拿到酒单的那一刻，你已经替全桌决定好了",
+    desc: "你天生不太会等别人来主导，酒局里也一样——哪家好、点什么、几点散，这些事你不是非要抢着决定，只是你决定了效率最高。你对品质有执念，喝酒也喝得很有目的感，不太会为了喝而喝。你清楚自己要什么，也清楚别人需要什么，这让你在任何场合都有种掌控感，有时候你自己都没意识到。",
+    social: "酒局里自然成为主导，不是刻意的，就是这样",
+    love: "强势但细心，认定了会替对方把一切都安排妥",
+    tags: ["#强势", "#高效", "#有野心"],
+    share: "做了个酒品MBTI，结果是【年份赤霞珠 ENTJ】\n拿到酒单的那一刻，我已经替全桌决定好了。\n你是哪杯？"
+  },
+  ENTP: {
+    title: "金汤力",
+    subtitle: "喝一杯能带出三个没有结论的争论",
+    desc: "你的嘴和脑子几乎同步运转，想到什么说什么，说着说着就变成了一场辩论，对方还没想好怎么反驳，你已经换话题了。但你不是为了吵架，只是真的觉得聊天要有点摩擦才有意思。酒局里你永远不会冷场，也永远不会让话题停在无聊的地方。别人眼里的麻烦事，在你看来都是有意思的谜题。",
+    social: "一桌陌生人两小时后全成了你的对话对象",
+    love: "需要能和你battle的人，太顺从了反而没意思",
+    tags: ["#毒舌", "#机智", "#停不下来"],
+    share: "做了个酒品MBTI，结果是【金汤力 ENTP】\n喝一杯能带出三个没有结论的争论。\n你是哪杯？"
+  },
+  INFJ: {
+    title: "自然酒",
+    subtitle: "你感觉不到它在看你，但它什么都看见了",
+    desc: "你不是那种会把自己摊开给所有人看的人。酒局里你笑着参与，但内心始终有一部分在旁观——观察情绪，感受气氛，默默知道每个人今晚的状态。你共情能力很强，有时候替别人难受比替自己难受还真实。你说话不多，但每一句都想过之后才开口，这让你说的话比别人的都有分量。懂你的人觉得你是天赐的，不懂你的人只是从没走进过你。",
+    social: "人群里看起来很合群，但真正打开的门只给几个人",
+    love: "感情里全情投入，但很难让人看见你受伤的样子",
+    tags: ["#神秘", "#洞察", "#少说多感受"],
+    share: "做了个酒品MBTI，结果是【自然酒 INFJ】\n你感觉不到它在看你，但它什么都看见了。\n你是哪杯？"
+  },
+  INFP: {
+    title: "手工梅酒",
+    subtitle: "每一口都有只有自己懂的故事",
+    desc: "你有很多话，但大多数时候选择不说。不是没感受，是感受太多了，说出来反而变形。喝到微醺，才是你最放松的状态——那个时刻你说的话都是真的，笑起来也是真的。你对这个世界有自己的一套理解，不一定对，但那是你的。你不需要所有人认可，只需要有人喝到第三杯还愿意继续听你说。",
+    social: "人多的时候安静，只有一两个人的时候才真正在线",
+    love: "爱起来很深，但很难让对方准确知道你需要什么",
+    tags: ["#细腻", "#理想主义", "#慢热"],
+    share: "做了个酒品MBTI，结果是【手工梅酒 INFP】\n每一口都有只有自己懂的故事。\n你是哪杯？"
+  },
+  ENFJ: {
+    title: "香槟",
+    subtitle: "举起杯，就是为了让你们都开心",
+    desc: "你天生有一种让人放松的能量，走进一个场合，气氛会不知不觉变好，你自己可能都没意识到。酒局里你是那个记得给每个人倒酒、记得今晚谁心情不太好的人。你真的很在乎身边的人，但有时候太会照顾别人，反而忘了说自己今晚想喝什么。偶尔也要允许自己被人照顾一下。",
+    social: "天然的气氛担当，但你自己从不觉得这是在表演",
+    love: "全力付出，但也需要对方能看见你偶尔的疲惫",
+    tags: ["#温暖", "#共情", "#天生主角"],
+    share: "做了个酒品MBTI，结果是【香槟 ENFJ】\n举起杯，就是为了让你们都开心。\n你是哪杯？"
+  },
+  ENFP: {
+    title: "莫吉托",
+    subtitle: "喝到第二杯，已经开始规划下一次旅行了",
+    desc: "你喝酒不只是在喝酒，你在感受整个夜晚。喝到第二杯开始聊梦想，喝到第三杯已经在计划下个月去哪了，全桌的人都被你带着跑。你对什么都好奇，对人尤其好奇，可以在一个陌生人面前聊得比老朋友还深。你的能量是真实的，不是表演出来的，这让你走到哪里都有人想靠近你。",
+    social: "走进一个房间，很快就不知道哪个是陌生人了",
+    love: "爱得热烈，需要对方能接住你的热情，而不是被吓到",
+    tags: ["#活力", "#跳跃", "#永远好奇"],
+    share: "做了个酒品MBTI，结果是【莫吉托 ENFP】\n喝到第二杯，已经开始规划下一次旅行了。\n你是哪杯？"
+  },
+  ISTJ: {
+    title: "苏格兰调和威士忌",
+    subtitle: "永远不会让你失望的那一杯",
+    desc: "你喝酒有自己的节奏，不赶时髦，不轻易换品牌。一款喝了很多年的威士忌，你知道它每一批次的细微差别。酒局里你不是最高调的那个，但你是最靠谱的——说几点到就几点到，说帮人叫车就不会忘。你不太习惯被突然改变计划，但如果提前说好，你会把新安排执行得比任何人都好。",
+    social: "不抢风头，但每次都是最后把桌上收拾好才走的人",
+    love: "用行动证明一切，不善言辞，但从不让对方操心",
+    tags: ["#可靠", "#稳重", "#认真执行"],
+    share: "做了个酒品MBTI，结果是【苏格兰调和威士忌 ISTJ】\n永远不会让你失望的那一杯。\n你是哪杯？"
+  },
+  ISFJ: {
+    title: "日本清酒",
+    subtitle: "安静地把所有人都照顾好了",
+    desc: "你记得朋友不喝什么酒、谁今晚开车、谁最近压力大——这些你从没刻意去记，就是知道。酒局里你很少抢话，但你是那个发现有人落单会主动过去搭话的人，是发现桌上水不够了会起身去拿的人。你的温柔不声张，但每个人都能感觉到。你习惯把别人照顾好，但偶尔也可以先说说自己今晚想喝什么。",
+    social: "永远知道谁今晚状态不太好，然后悄悄照顾到",
+    love: "细心到有点心疼，对方的事你记得比他自己还清楚",
+    tags: ["#体贴", "#细心", "#不张扬"],
+    share: "做了个酒品MBTI，结果是【日本清酒 ISFJ】\n安静地把所有人都照顾好了。\n你是哪杯？"
+  },
+  ESTJ: {
+    title: "干红葡萄酒",
+    subtitle: "酒局里默默承包了所有安排",
+    desc: "订位置、定时间、提醒大家别迟到——这些事你不是非要揽着，只是放给别人做你会不放心。你有执行力，有判断力，对品质有自己的标准，不太能接受将就。酒局里你是那个把菜点完、把账算清、确保所有人都上车才走的人。你不是控制欲强，只是觉得事情就该被好好安排，而你刚好最擅长这件事。",
+    social: "没人主导的时候你自然顶上，这已经是本能了",
+    love: "用责任感表达爱，对方的事你比他自己还上心",
+    tags: ["#负责", "#果断", "#有章法"],
+    share: "做了个酒品MBTI，结果是【干红葡萄酒 ESTJ】\n酒局里默默承包了所有安排。\n你是哪杯？"
+  },
+  ESFJ: {
+    title: "桃红葡萄酒",
+    subtitle: "你开心，我才真的开心",
+    desc: "你走进一个场合，会很快感知到谁和谁之间有点尴尬、谁今晚话少了一点，然后不动声色地把气氛调顺。你喝酒喝的是氛围，是这一桌人在一起的感觉，比起酒本身，你更在意每个人今晚有没有玩好。有时候会忘了问自己想喝什么，因为你太习惯先问别人了。你的热情是真的，这种真实让人很难不喜欢你。",
+    social: "最会活跃气氛，不是表演，就是发自内心想让大家开心",
+    love: "用心经营关系，需要对方能感受到并回应你的付出",
+    tags: ["#热情", "#在乎他人", "#照顾气氛"],
+    share: "做了个酒品MBTI，结果是【桃红葡萄酒 ESFJ】\n你开心，我才真的开心。\n你是哪杯？"
+  },
+  ISTP: {
+    title: "精酿黑啤",
+    subtitle: "不多说，但什么都看在眼里",
+    desc: "你坐在角落喝酒，不是因为格格不入，是因为那个位置最能看清全场。你不爱废话，但当你开口，往往直接说到关键。你喜欢搞明白一件事背后怎么运转——包括这杯酒为什么喝起来是这个味道。你动手能力强，危机出现的时候反而是你最冷静的时刻。不是不合群，只是不觉得合群是必须的。",
+    social: "话不多，但在的时候让人安心，走了才发现少了点什么",
+    love: "不擅长说，但会用行动让你知道你被在乎着",
+    tags: ["#冷静", "#独立", "#实干"],
+    share: "做了个酒品MBTI，结果是【精酿黑啤 ISTP】\n不多说，但什么都看在眼里。\n你是哪杯？"
+  },
+  ISFP: {
+    title: "当日限定特调",
+    subtitle: "每一次都是不一样的惊喜",
+    desc: "你不太喜欢被定义，今晚想喝什么全看心情，跟上周的你可能完全不一样。你对美很敏感，酒的颜色、杯子的形状、光打在液体上的样子，这些细节你都会注意到。你活在当下，不太规划远处的事，但你比大多数人都更懂得感受眼前这个时刻。你的世界很安静，但很丰富，不是所有人都有机会进来看。",
+    social: "不主动，但走近了你就会发现这个人真的很有意思",
+    love: "感情里很纯粹，只是需要对方给你足够的空间",
+    tags: ["#感性", "#随性", "#活在当下"],
+    share: "做了个酒品MBTI，结果是【当日限定特调 ISFP】\n每一次都是不一样的惊喜。\n你是哪杯？"
+  },
+  ESTP: {
+    title: "龙舌兰纯饮",
+    subtitle: "想那么多干嘛，干就完了",
+    desc: "你不太喜欢等，也不太喜欢计划，有想法就去做，有酒就先干了再说。你反应快，现场应变能力强，别人还在想怎么办的时候你已经动了。酒局里你是第一个举杯的那个，也是把气氛从零拉到满的那个。你喜欢真实发生的事，不太有耐心对付那些绕来绕去说不到点的人。",
+    social: "走到哪里都能成为焦点，不是刻意的，就是自然发生",
+    love: "直接，喜欢就是喜欢，不喜欢绕弯子",
+    tags: ["#冲劲", "#大胆", "#行动第一"],
+    share: "做了个酒品MBTI，结果是【龙舌兰纯饮 ESTP】\n想那么多干嘛，干就完了。\n你是哪杯？"
+  },
+  ESFP: {
+    title: "含羞草",
+    subtitle: "没有你这个派对根本转不起来",
+    desc: "你天生就是为了让今晚更好玩而存在的。你不需要暖场，走进来就已经是气氛本身了。你很容易快乐，也很容易让别人快乐，这种能量是真实的，不是表演出来的。喝到嗨了你会想跳舞、想合照、想叫所有人干杯，因为你真的觉得这一刻值得被记住。今晚先把今晚过好，明天的事明天再说。",
+    social: "和你在一起的人都会不知不觉地笑起来",
+    love: "爱起来直接热烈，需要对方能接住你的活力和情绪",
+    tags: ["#感染力", "#爱玩", "#自来熟"],
+    share: "做了个酒品MBTI，结果是【含羞草 ESFP】\n没有你这个派对根本转不起来。\n你是哪杯？"
+  }
+};
+
+/* ─────────────────────────────────────────
+   State
+───────────────────────────────────────── */
+let idx    = 0;
+let scores = {};
+let locked = false;
+
+/* ─────────────────────────────────────────
+   Screen helper
+───────────────────────────────────────── */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/* ─────────────────────────────────────────
+   Quiz
+───────────────────────────────────────── */
+function startQuiz() {
+  idx    = 0;
+  scores = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+  locked = false;
+  renderQ();
+  show('screen-quiz');
+}
+
+function renderQ() {
+  const q   = QS[idx];
+  const tot = QS.length;
+  const pct = Math.round((idx / tot) * 100);
+
+  document.getElementById('q-text').textContent  = q.q;
+  document.getElementById('opt-0').textContent   = q.opts[0].t;
+  document.getElementById('opt-1').textContent   = q.opts[1].t;
+  document.getElementById('prog-num').textContent = `${idx + 1} / ${tot}`;
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-bar').style.width = `${pct}%`;
+
+  ['opt-0','opt-1'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('selected','fade-out');
+  });
+  locked = false;
+}
+
+function pick(i) {
+  if (locked) return;
+  locked = true;
+
+  const sel = document.getElementById(`opt-${i}`);
+  const oth = document.getElementById(`opt-${i === 0 ? 1 : 0}`);
+  sel.classList.add('selected');
+  oth.classList.add('fade-out');
+
+  scores[QS[idx].opts[i].v]++;
+
+  setTimeout(() => {
+    idx++;
+    if (idx >= QS.length) {
+      show('screen-loading');
+      setTimeout(() => {
+        const type = calcType();
+        renderResult(type);
+        show('screen-result');
+      }, 2100);
+    } else {
+      renderQ();
+    }
+  }, 390);
+}
+
+/* ─────────────────────────────────────────
+   MBTI calc  — tie goes to first letter (E/S/T/J)
+───────────────────────────────────────── */
+function calcType() {
+  return (scores.E >= scores.I ? 'E' : 'I')
+       + (scores.S >= scores.N ? 'S' : 'N')
+       + (scores.T >= scores.F ? 'T' : 'F')
+       + (scores.J >= scores.P ? 'J' : 'P');
+}
+
+/* ─────────────────────────────────────────
+   Result render
+───────────────────────────────────────── */
+function renderResult(type) {
+  const d = RS[type] || RS['ENFP'];
+
+  document.getElementById('r-mbti').textContent    = type;
+  document.getElementById('r-title').textContent   = d.title;
+  document.getElementById('r-subtitle').textContent = d.subtitle;
+  document.getElementById('r-desc').textContent    = d.desc;
+  document.getElementById('r-social').textContent  = d.social;
+  document.getElementById('r-love').textContent    = d.love;
+  document.getElementById('r-share').textContent   = d.share;
+
+  const tagsEl = document.getElementById('r-tags');
+  tagsEl.innerHTML = '';
+  d.tags.forEach(t => {
+    const s = document.createElement('span');
+    s.className   = 'tag';
+    s.textContent = t;
+    tagsEl.appendChild(s);
+  });
+
+  document.getElementById('btn-copy').textContent = '复制分享文案';
+}
+
+/* ─────────────────────────────────────────
+   Copy share text
+───────────────────────────────────────── */
+function copyShare() {
+  const text = document.getElementById('r-share').textContent;
+  const btn  = document.getElementById('btn-copy');
+
+  const done = () => {
+    btn.textContent = '已复制 ✓';
+    setTimeout(() => { btn.textContent = '复制分享文案'; }, 2500);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(() => legacyCopy(text, done));
+  } else {
+    legacyCopy(text, done);
+  }
+}
+
+function legacyCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {
+    document.getElementById('btn-copy').textContent = '请手动复制';
+  }
+  document.body.removeChild(ta);
+}
+
+/* ─────────────────────────────────────────
+   Reset
+───────────────────────────────────────── */
+function resetQuiz() {
+  show('screen-landing');
+}
+</script>
+</body>
+</html>
