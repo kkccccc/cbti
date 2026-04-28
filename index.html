@@ -288,21 +288,18 @@
       margin-bottom: 14px;
       filter: drop-shadow(0 0 20px rgba(212,168,92,0.35));
     }
-    .r-en {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      background: var(--grad-gold);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 6px;
-    }
     .r-title {
-      font-size: 22px;
-      font-weight: 700;
+      font-size: 36px;
+      font-weight: 800;
       color: var(--text);
+      margin-bottom: 8px;
+    }
+    .r-en {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-3);
       margin-bottom: 0;
     }
     /* section label with left bar */
@@ -479,7 +476,7 @@
       .card      { padding: 28px 18px; }
       .display   { font-size: 32px; }
       .question  { font-size: 17px; }
-      .r-en      { font-size: 26px; }
+      .r-title   { font-size: 30px; }
       .opt       { font-size: 14px; padding: 16px 40px 16px 18px; }
     }
   </style>
@@ -541,8 +538,8 @@
       <!-- 顶部酒品身份 -->
       <div class="r-hero">
         <span class="r-icon" id="r-icon">🍷</span>
-        <div class="r-en"    id="r-en">MOJITO</div>
         <div class="r-title" id="r-title">莫吉托</div>
+        <div class="r-en"    id="r-en">MOJITO</div>
       </div>
 
       <!-- 标签 -->
@@ -1175,159 +1172,285 @@ function legacyCopy(text, cb) {
 }
 
 /* ─────────────────────────────────────────
-   Save result as image
+   Save result as image (full long card)
 ───────────────────────────────────────── */
 function saveImage() {
   const btn = document.getElementById('btn-save');
   btn.textContent = '生成中…';
   btn.disabled = true;
 
-  const icon  = document.getElementById('r-icon').textContent;
-  const en    = document.getElementById('r-en').textContent;
-  const title = document.getElementById('r-title').textContent;
-  const quote = document.getElementById('r-quote').textContent;
-  const quick = document.getElementById('r-quick').textContent;
-  const tags  = Array.from(document.getElementById('r-tags').children).map(s => s.textContent);
+  const d = {
+    icon:       document.getElementById('r-icon').textContent,
+    en:         document.getElementById('r-en').textContent,
+    title:      document.getElementById('r-title').textContent,
+    quote:      document.getElementById('r-quote').textContent,
+    quick:      document.getElementById('r-quick').textContent,
+    desc:       document.getElementById('r-desc').textContent,
+    tags:       Array.from(document.getElementById('r-tags').children).map(s => s.textContent),
+    ext:        document.getElementById('r-ext').textContent,
+    extDesc:    document.getElementById('r-ext-desc').textContent,
+    sen:        document.getElementById('r-sen').textContent,
+    senDesc:    document.getElementById('r-sen-desc').textContent,
+    compatIcon: document.getElementById('r-compat-icon').textContent,
+    compatName: document.getElementById('r-compat-name').textContent,
+    compatWhy:  document.getElementById('r-compat-why').textContent,
+    scenario:   document.getElementById('r-scenario').textContent,
+    share:      document.getElementById('r-share').textContent,
+  };
 
-  const W = 640, H = 900;
-  const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const c = cv.getContext('2d');
+  const W = 750, PAD = 52, CW = W - PAD * 2;
 
-  // background gradient
-  const bg = c.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#09060f');
-  bg.addColorStop(1, '#180f30');
-  c.fillStyle = bg;
-  c.fillRect(0, 0, W, H);
+  // ── helpers ──────────────────────────────────────
+  // draw on a temp 1×1 canvas just to measure text
+  const mc = document.createElement('canvas').getContext('2d');
 
-  // subtle noise texture via tiny pattern
-  c.fillStyle = 'rgba(255,255,255,0.012)';
-  for (let i = 0; i < W; i += 4) for (let j = 0; j < H; j += 4) {
-    if (Math.random() > 0.6) c.fillRect(i, j, 2, 2);
+  function wrap(ctx, text, x, y, maxW, lineH, draw) {
+    let line = '', lines = [];
+    for (const ch of [...text]) {
+      const t = line + ch;
+      if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = ch; }
+      else line = t;
+    }
+    if (line) lines.push(line);
+    if (draw !== false) lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineH));
+    return lines.length * lineH;
   }
 
-  // top gold border strip
-  const strip = c.createLinearGradient(0, 0, W, 0);
-  strip.addColorStop(0,   'transparent');
-  strip.addColorStop(0.3, '#d4a85c');
-  strip.addColorStop(0.7, '#d4a85c');
-  strip.addColorStop(1,   'transparent');
-  c.fillStyle = strip;
-  c.fillRect(0, 0, W, 2);
+  function measureWrap(font, text, maxW, lineH) {
+    mc.font = font; return wrap(mc, text, 0, 0, maxW, lineH, false);
+  }
 
-  // card background
-  c.save();
-  roundRect(c, 40, 40, W - 80, H - 80, 24);
-  c.fillStyle = 'rgba(255,255,255,0.045)';
-  c.fill();
-  c.strokeStyle = 'rgba(212,168,92,0.25)';
-  c.lineWidth = 1;
-  c.stroke();
-  c.restore();
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
 
-  // icon
-  c.font = '72px serif';
-  c.textAlign = 'center';
-  c.fillStyle = '#ffffff';
-  c.fillText(icon, W / 2, 160);
+  // ── pre-measure variable-height sections ─────────
+  const FONT_BODY = '26px sans-serif';
+  const LH_BODY   = 40;
+  const descH     = measureWrap(FONT_BODY, d.desc, CW, LH_BODY);
+  const quoteH    = measureWrap('italic 26px sans-serif', d.quote, CW - 28, LH_BODY);
+  const quickH    = measureWrap('26px sans-serif', d.quick, CW - 32, LH_BODY);
+  const scenH     = measureWrap(FONT_BODY, d.scenario, CW - 32, LH_BODY);
+  const shareLines = d.share.split('\n');
 
-  // EN name
-  c.font = 'bold 22px sans-serif';
-  c.fillStyle = '#d4a85c';
-  c.letterSpacing = '4px';
-  c.fillText(en, W / 2, 210);
-  c.letterSpacing = '0px';
+  // ── calculate total canvas height ────────────────
+  const TOTAL_H =
+    72 + 96 + 32 + 60 + 72 +           // top pad + icon + en + title + gap
+    40 +                                // hero divider
+    50 + 36 +                           // tags row + gap
+    (quoteH + 44) + 32 +               // quote box + gap
+    36 + (quickH + 40) + 40 +          // sec-label + quick box + gap
+    1 + 40 +                           // divider + gap
+    36 + descH + 40 +                  // sec-label + desc + gap
+    1 + 40 +                           // divider + gap
+    36 + 148 + 40 +                    // sec-label + indices + gap
+    36 + 260 + 40 +                    // sec-label + radar + gap
+    1 + 40 +                           // divider + gap
+    36 + 108 + 40 +                    // sec-label + compat + gap
+    36 + (scenH + 40) + 40 +           // sec-label + scenario + gap
+    1 + 40 +                           // divider + gap
+    28 + (shareLines.length * 36 + 44) + 60 + // share label + box + bottom
+    60;                                // watermark + padding
 
-  // Chinese title
-  c.font = 'bold 44px sans-serif';
-  c.fillStyle = '#ffffff';
-  c.fillText(title, W / 2, 272);
+  // ── create canvas ────────────────────────────────
+  const cv = document.createElement('canvas');
+  cv.width  = W;
+  cv.height = TOTAL_H;
+  const c = cv.getContext('2d');
+
+  // background
+  const bg = c.createLinearGradient(0, 0, 0, TOTAL_H);
+  bg.addColorStop(0, '#0e0920'); bg.addColorStop(1, '#09060f');
+  c.fillStyle = bg; c.fillRect(0, 0, W, TOTAL_H);
+
+  // top gold strip
+  const topStrip = c.createLinearGradient(0, 0, W, 0);
+  topStrip.addColorStop(0, 'transparent'); topStrip.addColorStop(0.2, '#d4a85c');
+  topStrip.addColorStop(0.8, '#d4a85c');  topStrip.addColorStop(1, 'transparent');
+  c.fillStyle = topStrip; c.fillRect(0, 0, W, 3);
+
+  let y = 72;
+
+  // ── hero ─────────────────────────────────────────
+  c.font = '88px serif'; c.textAlign = 'center'; c.fillStyle = '#fff';
+  c.fillText(d.icon, W/2, y + 84); y += 96;
+
+  c.font = 'bold 28px sans-serif'; c.fillStyle = '#d4a85c';
+  c.fillText(d.en, W/2, y + 28); y += 36;
+
+  c.font = 'bold 54px sans-serif'; c.fillStyle = '#fff';
+  c.fillText(d.title, W/2, y + 54); y += 72;
+
+  const hd = c.createLinearGradient(W*0.2, 0, W*0.8, 0);
+  hd.addColorStop(0,'transparent'); hd.addColorStop(0.5,'rgba(212,168,92,0.5)'); hd.addColorStop(1,'transparent');
+  c.strokeStyle = hd; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(W*0.2, y); c.lineTo(W*0.8, y); c.stroke();
+  y += 40;
+
+  // ── tags ─────────────────────────────────────────
+  c.textAlign = 'left';
+  let tx = PAD;
+  d.tags.forEach(tag => {
+    c.font = '500 23px sans-serif';
+    const tw = c.measureText(tag).width + 28;
+    c.save(); rr(c, tx, y, tw, 38, 19);
+    c.fillStyle = 'rgba(160,127,212,0.15)'; c.fill();
+    c.strokeStyle = 'rgba(160,127,212,0.3)'; c.lineWidth = 1; c.stroke(); c.restore();
+    c.fillStyle = '#a07fd4'; c.fillText(tag, tx + 14, y + 26); tx += tw + 10;
+  });
+  y += 50 + 36;
+
+  // ── quote ────────────────────────────────────────
+  const qBoxH = quoteH + 44;
+  c.save(); rr(c, PAD, y, CW, qBoxH, 12);
+  c.fillStyle = 'rgba(212,168,92,0.06)'; c.fill(); c.restore();
+  c.fillStyle = '#d4a85c'; c.fillRect(PAD, y, 4, qBoxH);
+  c.font = 'italic 26px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.75)';
+  wrap(c, d.quote, PAD + 20, y + 32, CW - 28, LH_BODY);
+  y += qBoxH + 32;
+
+  // ── quick review ─────────────────────────────────
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('酒品速评', PAD + 14, y + 18); y += 36 + 4;
+  const qkBoxH = quickH + 40;
+  c.save(); rr(c, PAD, y, CW, qkBoxH, 12);
+  c.fillStyle = 'rgba(160,127,212,0.12)'; c.fill();
+  c.strokeStyle = 'rgba(160,127,212,0.2)'; c.lineWidth = 1; c.stroke(); c.restore();
+  c.font = '26px sans-serif'; c.fillStyle = '#c0a0e8';
+  wrap(c, d.quick, PAD + 16, y + 30, CW - 32, LH_BODY);
+  y += qkBoxH + 40;
 
   // divider
-  const div = c.createLinearGradient(160, 0, W - 160, 0);
-  div.addColorStop(0, 'transparent');
-  div.addColorStop(0.5, 'rgba(212,168,92,0.6)');
-  div.addColorStop(1, 'transparent');
-  c.strokeStyle = div;
-  c.lineWidth = 1;
-  c.beginPath();
-  c.moveTo(160, 298);
-  c.lineTo(W - 160, 298);
-  c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
 
-  // quote
-  c.font = 'italic 18px sans-serif';
-  c.fillStyle = 'rgba(255,255,255,0.65)';
-  c.fillText(quote, W / 2, 340);
+  // ── description ──────────────────────────────────
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('人格解读', PAD + 14, y + 18); y += 36 + 4;
+  c.font = FONT_BODY; c.fillStyle = 'rgba(239,230,212,0.65)';
+  wrap(c, d.desc, PAD, y, CW, LH_BODY); y += descH + 40;
 
-  // quick review box
-  c.save();
-  roundRect(c, 80, 365, W - 160, 52, 12);
-  c.fillStyle = 'rgba(160,127,212,0.18)';
-  c.fill();
-  c.restore();
-  c.font = '15px sans-serif';
-  c.fillStyle = '#c0a0e8';
-  c.fillText(quick, W / 2, 396);
+  // divider
+  c.strokeStyle = 'rgba(255,255,255,0.08)';
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
 
-  // tags
-  let tx = W / 2 - (tags.join('  ').length * 7) / 2;
-  c.font = '14px sans-serif';
-  tags.forEach(tag => {
-    const tw = c.measureText(tag).width + 24;
-    c.save();
-    roundRect(c, tx, 438, tw, 30, 8);
-    c.fillStyle = 'rgba(212,168,92,0.15)';
-    c.fill();
-    c.strokeStyle = 'rgba(212,168,92,0.4)';
-    c.lineWidth = 1;
-    c.stroke();
-    c.restore();
-    c.fillStyle = '#d4a85c';
-    c.textAlign = 'left';
-    c.fillText(tag, tx + 12, 458);
-    tx += tw + 10;
+  // ── indices ──────────────────────────────────────
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('你的两个指数', PAD + 14, y + 18); y += 36 + 4;
+  const cellW = (CW - 16) / 2, cellH = 148;
+  [['外放度', d.ext, d.extDesc], ['感性度', d.sen, d.senDesc]].forEach(([lbl, num, desc], i) => {
+    const cx2 = PAD + i * (cellW + 16);
+    c.save(); rr(c, cx2, y, cellW, cellH, 16);
+    c.fillStyle = 'rgba(255,255,255,0.04)'; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1; c.stroke(); c.restore();
+    c.textAlign = 'center';
+    c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.3)';
+    c.fillText(lbl, cx2 + cellW/2, y + 32);
+    const ng = c.createLinearGradient(cx2, y+50, cx2+cellW, y+110);
+    ng.addColorStop(0,'#c88a48'); ng.addColorStop(1,'#9b72cf');
+    c.font = 'bold 58px sans-serif'; c.fillStyle = ng;
+    c.fillText(num, cx2 + cellW/2, y + 104);
+    c.font = '20px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.28)';
+    c.fillText(desc, cx2 + cellW/2, y + 132);
   });
-  c.textAlign = 'center';
+  y += cellH + 40;
 
-  // radar chart copy
+  // ── radar ────────────────────────────────────────
+  c.textAlign = 'left';
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('酒感雷达', PAD + 14, y + 18); y += 36 + 4;
   const radarSrc = document.getElementById('r-radar');
-  c.drawImage(radarSrc, (W - 200) / 2, 488, 200, 200);
+  c.drawImage(radarSrc, (W - 260) / 2, y, 260, 260); y += 260 + 40;
 
-  // bottom watermark
-  c.font = '13px sans-serif';
-  c.fillStyle = 'rgba(255,255,255,0.25)';
-  c.fillText('酒品人格测试  ·  你是哪杯酒？', W / 2, H - 68);
-  c.font = '11px sans-serif';
-  c.fillStyle = 'rgba(255,255,255,0.15)';
-  c.fillText('扫码测测你是哪杯酒 →', W / 2, H - 48);
+  // divider
+  c.strokeStyle = 'rgba(255,255,255,0.08)';
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
 
+  // ── compat ───────────────────────────────────────
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('你的搭子酒', PAD + 14, y + 18); y += 36 + 4;
+  const cpH = 108;
+  c.save(); rr(c, PAD, y, CW, cpH, 16);
+  c.fillStyle = 'rgba(255,255,255,0.04)'; c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1; c.stroke(); c.restore();
+  c.font = '54px serif'; c.textAlign = 'left'; c.fillStyle = '#fff';
+  c.fillText(d.compatIcon, PAD + 20, y + 72);
+  c.font = 'bold 28px sans-serif'; c.fillStyle = '#fff';
+  c.fillText(d.compatName, PAD + 92, y + 44);
+  c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.4)';
+  wrap(c, d.compatWhy, PAD + 92, y + 72, CW - 112, 32);
+  y += cpH + 40;
+
+  // ── scenario ─────────────────────────────────────
+  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
+  c.fillText('典型场景', PAD + 14, y + 18); y += 36 + 4;
+  const scBoxH = scenH + 40;
+  c.save(); rr(c, PAD, y, CW, scBoxH, 12);
+  c.fillStyle = 'rgba(212,168,92,0.05)'; c.fill();
+  c.strokeStyle = 'rgba(212,168,92,0.15)'; c.lineWidth = 1; c.stroke(); c.restore();
+  c.font = FONT_BODY; c.fillStyle = 'rgba(239,230,212,0.65)';
+  wrap(c, d.scenario, PAD + 16, y + 30, CW - 32, LH_BODY);
+  y += scBoxH + 40;
+
+  // divider
+  c.strokeStyle = 'rgba(255,255,255,0.08)';
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
+
+  // ── share text ───────────────────────────────────
+  c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.3)';
+  c.fillText('分享文案', PAD, y + 18); y += 28 + 8;
+  const shBoxH = shareLines.length * 36 + 44;
+  c.save(); rr(c, PAD, y, CW, shBoxH, 12);
+  c.fillStyle = 'rgba(255,255,255,0.025)'; c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
+  c.setLineDash([6, 4]); c.stroke(); c.setLineDash([]); c.restore();
+  c.font = '24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.6)';
+  shareLines.forEach((line, i) => c.fillText(line, PAD + 20, y + 34 + i * 36));
+  y += shBoxH + 48;
+
+  // ── watermark ────────────────────────────────────
+  c.textAlign = 'center';
+  c.font = '22px sans-serif'; c.fillStyle = 'rgba(255,255,255,0.18)';
+  c.fillText('酒品人格测试  ·  你是哪杯酒？', W/2, y + 20); y += 44;
+
+  // bottom gold strip
+  c.fillStyle = topStrip; c.fillRect(0, y, W, 3);
+
+  // ── export ───────────────────────────────────────
   cv.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `酒品人格-${title}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    btn.textContent = '已保存 ✓';
-    btn.disabled = false;
-    setTimeout(() => { btn.textContent = '保存结果图片'; }, 2500);
+    const file = new File([blob], `酒品人格-${d.title}.png`, { type: 'image/png' });
+    const finish = (label) => {
+      btn.textContent = label;
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = '保存结果图片'; }, 2500);
+    };
+    // On mobile (iOS/Android), share sheet lets user tap "存储图像"
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: '我的酒品人格' })
+        .then(() => finish('已分享 ✓'))
+        .catch(() => dlImage(blob, d.title, finish));
+    } else {
+      dlImage(blob, d.title, finish);
+    }
   }, 'image/png');
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
+function dlImage(blob, title, finish) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `酒品人格-${title}.png`; a.click();
+  URL.revokeObjectURL(url);
+  finish('已保存 ✓');
 }
 
 /* ─────────────────────────────────────────
