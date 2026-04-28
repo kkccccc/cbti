@@ -8,22 +8,24 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg:           #09060f;
-      --surface:      rgba(255,255,255,0.05);
-      --surface-hi:   rgba(255,255,255,0.09);
-      --border:       rgba(255,255,255,0.1);
-      --border-gold:  rgba(210,160,80,0.55);
-      --gold:         #d4a85c;
-      --gold-hi:      #edc97a;
-      --gold-dim:     #a07840;
-      --purple:       #a07fd4;
-      --purple-dim:   #7b5faa;
-      --text:         #efe6d4;
-      --text-2:       rgba(239,230,212,0.55);
-      --text-3:       rgba(239,230,212,0.28);
-      --grad-gold:    linear-gradient(135deg, #f0d898, #d4a85c);
-      --grad-cta:     linear-gradient(135deg, #c88a48, #9b72cf);
-      --r-lg: 22px;
+      --bg:           #04080f;
+      --surface:      rgba(255,255,255,0.055);
+      --surface-hi:   rgba(255,255,255,0.10);
+      --border:       rgba(255,255,255,0.12);
+      --border-blue:  rgba(64,196,255,0.45);
+      --blue:         #40c4ff;
+      --blue-hi:      #80d8ff;
+      --indigo:       #536dfe;
+      --cyan:         #00e5ff;
+      --cyan-dim:     #00b0ff;
+      --lime:         #64ffda;
+      --text:         #e8f4ff;
+      --text-2:       rgba(232,244,255,0.58);
+      --text-3:       rgba(232,244,255,0.30);
+      --grad-hero:    linear-gradient(135deg, #40c4ff, #536dfe, #00e5ff);
+      --grad-cta:     linear-gradient(135deg, #2196f3 0%, #536dfe 50%, #00e5ff 100%);
+      --grad-warm:    linear-gradient(135deg, #40c4ff, #536dfe);
+      --r-lg: 24px;
       --r-md: 16px;
       --r-sm: 12px;
     }
@@ -33,15 +35,22 @@
     body {
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 70% 55% at 8% 8%,   rgba(110,70,200,0.22) 0%, transparent 60%),
-        radial-gradient(ellipse 55% 45% at 92% 92%, rgba(190,120,50,0.16) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 65% at 50% 50%, rgba(70,30,140,0.1)  0%, transparent 70%);
+        radial-gradient(ellipse 60% 50% at 15% 10%,  rgba(33,150,243,0.38) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 45% at 85% 85%,  rgba(83,109,254,0.28) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 55% at 80% 15%,  rgba(0,229,255,0.20)  0%, transparent 55%),
+        radial-gradient(ellipse 35% 40% at 20% 90%,  rgba(100,255,218,0.10) 0%, transparent 55%);
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
       color: var(--text);
       display: flex;
       justify-content: center;
       overflow-x: hidden;
+      animation: bgShift 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      0%   { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(20deg) brightness(1.04); }
     }
 
     #app {
@@ -62,13 +71,13 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(18px);
-      transition: opacity 0.38s ease, transform 0.38s ease;
+      transform: translateY(22px) scale(0.98);
+      transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1);
     }
     .screen.active {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
     #screen-result {
       justify-content: flex-start;
@@ -82,32 +91,39 @@
     /* ── Card ── */
     .card {
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.13);
       border-radius: var(--r-lg);
       padding: 36px 28px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      box-shadow: 0 0 0 1px rgba(64,196,255,0.08) inset, 0 24px 60px rgba(0,0,0,0.50);
     }
 
     /* ── Typography ── */
     .eyebrow {
       font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 3px;
+      font-weight: 600;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--text-3);
+      color: var(--cyan);
       margin-bottom: 14px;
+      opacity: 0.75;
     }
     .display {
-      font-size: 38px;
-      font-weight: 800;
-      line-height: 1.15;
-      background: var(--grad-gold);
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1.1;
+      background: var(--grad-hero);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: 16px;
+      animation: titleShimmer 4s ease-in-out infinite alternate;
+    }
+    @keyframes titleShimmer {
+      0%   { filter: brightness(1); }
+      100% { filter: brightness(1.2) saturate(1.3); }
     }
     .body-md {
       font-size: 15px;
@@ -125,38 +141,51 @@
       border-radius: var(--r-md);
       border: none;
       font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
       cursor: pointer;
       transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
-    .btn:active { transform: scale(0.97); }
+    .btn:active { transform: scale(0.96); }
 
     .btn-cta {
       background: var(--grad-cta);
+      background-size: 200% 100%;
       color: #fff;
-      box-shadow: 0 8px 28px rgba(140,100,210,0.28);
+      box-shadow: 0 8px 32px rgba(33,150,243,0.45), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      animation: ctaPulse 3s ease-in-out infinite;
     }
-    .btn-cta:hover { filter: brightness(1.08); box-shadow: 0 10px 36px rgba(140,100,210,0.38); }
+    @keyframes ctaPulse {
+      0%,100% { box-shadow: 0 8px 32px rgba(33,150,243,0.45), 0 0 0 1px rgba(255,255,255,0.1) inset; }
+      50%     { box-shadow: 0 12px 48px rgba(83,109,254,0.6), 0 0 0 1px rgba(255,255,255,0.15) inset; }
+    }
+    .btn-cta:hover { filter: brightness(1.12); }
+    .btn-cta:active { animation: none; }
 
     .btn-ghost {
-      background: transparent;
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
       color: var(--text-2);
       margin-top: 12px;
       font-size: 14px;
+      font-weight: 600;
     }
-    .btn-ghost:hover { border-color: var(--gold-dim); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue-hi); background: rgba(64,196,255,0.08); }
 
     /* ── Landing ── */
     .hero-icon {
-      font-size: 68px;
+      font-size: 72px;
       display: block;
       text-align: center;
       margin-bottom: 28px;
-      filter: drop-shadow(0 0 24px rgba(212,168,92,0.45));
+      filter: drop-shadow(0 0 18px rgba(64,196,255,0.65)) drop-shadow(0 0 40px rgba(0,229,255,0.35));
+      animation: iconPop 3.5s ease-in-out infinite;
+    }
+    @keyframes iconPop {
+      0%,100% { transform: scale(1)   rotate(-3deg); filter: drop-shadow(0 0 18px rgba(64,196,255,0.65)) drop-shadow(0 0 40px rgba(0,229,255,0.35)); }
+      50%     { transform: scale(1.07) rotate(3deg);  filter: drop-shadow(0 0 30px rgba(64,196,255,0.95)) drop-shadow(0 0 60px rgba(83,109,254,0.6)); }
     }
     .hero-desc { margin-bottom: 28px; }
     .meta-row {
@@ -168,8 +197,9 @@
       flex: 1;
       text-align: center;
       font-size: 12px;
+      font-weight: 500;
       color: var(--text-3);
-      border-right: 1px solid var(--border);
+      border-right: 1px solid rgba(255,255,255,0.1);
       padding: 0 4px;
     }
     .meta-row span:last-child { border-right: none; }
@@ -180,26 +210,28 @@
       display: flex;
       justify-content: space-between;
       font-size: 13px;
+      font-weight: 600;
       color: var(--text-2);
       margin-bottom: 10px;
     }
     .progress-track {
-      height: 3px;
+      height: 4px;
       background: rgba(255,255,255,0.08);
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
     }
     .progress-fill {
       height: 100%;
       background: var(--grad-cta);
-      border-radius: 2px;
+      border-radius: 3px;
       transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 8px rgba(33,150,243,0.7);
     }
 
     /* ── Options ── */
     .question {
       font-size: 19px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1.6;
       color: var(--text);
       margin-bottom: 28px;
@@ -207,60 +239,72 @@
     .opt {
       display: block;
       width: 100%;
-      padding: 15px 40px 15px 18px;
+      padding: 15px 44px 15px 18px;
       border-radius: var(--r-md);
-      border: 1px solid var(--border);
-      background: transparent;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.035);
       color: var(--text);
       font-size: 14px;
       line-height: 1.55;
       text-align: left;
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, opacity 0.25s, transform 0.15s;
+      transition: background 0.18s, border-color 0.18s, opacity 0.25s, transform 0.15s, box-shadow 0.18s;
       margin-bottom: 10px;
       position: relative;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
     .opt:last-of-type { margin-bottom: 0; }
-    .opt:hover { border-color: var(--gold-dim); background: rgba(212,168,92,0.06); }
-    .opt:active { transform: scale(0.99); }
+    .opt:hover {
+      border-color: var(--blue);
+      background: rgba(64,196,255,0.09);
+      box-shadow: 0 0 0 1px rgba(64,196,255,0.22), 0 4px 16px rgba(33,150,243,0.18);
+      transform: translateX(3px);
+    }
+    .opt:active { transform: scale(0.99) translateX(3px); }
     .opt.selected {
-      border-color: var(--gold);
-      background: rgba(212,168,92,0.12);
+      border-color: var(--cyan);
+      background: rgba(0,229,255,0.10);
+      box-shadow: 0 0 0 1px rgba(0,229,255,0.32), 0 4px 20px rgba(0,229,255,0.18);
       pointer-events: none;
     }
     .opt.selected::after {
       content: '✓';
       position: absolute;
-      right: 18px;
+      right: 16px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--gold);
-      font-size: 14px;
-      font-weight: 700;
+      color: var(--cyan);
+      font-size: 15px;
+      font-weight: 800;
     }
-    .opt.fade-out { opacity: 0.25; pointer-events: none; }
+    .opt.fade-out { opacity: 0.2; pointer-events: none; }
 
     /* ── Loading ── */
     .loading-wrap { text-align: center; }
     .loading-icon {
-      font-size: 60px;
+      font-size: 64px;
       display: block;
       margin-bottom: 24px;
-      animation: float 2.2s ease-in-out infinite;
+      animation: shakeFloat 1.6s ease-in-out infinite;
     }
-    @keyframes float {
-      0%,100% { transform: translateY(0) rotate(-4deg); }
-      50%      { transform: translateY(-12px) rotate(4deg); }
+    @keyframes shakeFloat {
+      0%,100% { transform: translateY(0) rotate(-6deg) scale(1); filter: drop-shadow(0 0 12px rgba(64,196,255,0.6)); }
+      25%     { transform: translateY(-14px) rotate(5deg) scale(1.08); filter: drop-shadow(0 0 28px rgba(0,229,255,0.7)); }
+      50%     { transform: translateY(-6px) rotate(-3deg) scale(1.04); filter: drop-shadow(0 0 20px rgba(83,109,254,0.75)); }
+      75%     { transform: translateY(-18px) rotate(7deg) scale(1.1); filter: drop-shadow(0 0 36px rgba(33,150,243,0.8)); }
     }
     .loading-label {
       font-size: 16px;
-      color: var(--text-2);
-      animation: breathe 1.8s ease-in-out infinite;
+      font-weight: 600;
+      background: var(--grad-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: breathe 1.6s ease-in-out infinite;
     }
     @keyframes breathe {
-      0%,100% { opacity: 0.35; }
+      0%,100% { opacity: 0.4; }
       50%      { opacity: 1; }
     }
     .loading-dots::after {
@@ -275,29 +319,36 @@
     }
 
     /* ── Result ── */
-    /* ── Result page ── */
     .r-hero {
       text-align: center;
       padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       margin-bottom: 24px;
     }
     .r-icon {
-      font-size: 64px;
+      font-size: 68px;
       display: block;
       margin-bottom: 14px;
-      filter: drop-shadow(0 0 20px rgba(212,168,92,0.35));
+      filter: drop-shadow(0 0 16px rgba(64,196,255,0.6)) drop-shadow(0 0 36px rgba(83,109,254,0.4));
+      animation: iconGlow 2.8s ease-in-out infinite alternate;
+    }
+    @keyframes iconGlow {
+      0%   { filter: drop-shadow(0 0 16px rgba(64,196,255,0.6)) drop-shadow(0 0 36px rgba(83,109,254,0.4)); transform: scale(1); }
+      100% { filter: drop-shadow(0 0 30px rgba(64,196,255,0.9)) drop-shadow(0 0 56px rgba(0,229,255,0.65)); transform: scale(1.06); }
     }
     .r-title {
       font-size: 36px;
-      font-weight: 800;
-      color: var(--text);
+      font-weight: 900;
+      background: var(--grad-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 8px;
     }
     .r-en {
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 4px;
       text-transform: uppercase;
       color: var(--text-3);
       margin-bottom: 0;
@@ -307,11 +358,13 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-2);
-      letter-spacing: 1px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
       margin-bottom: 12px;
+      opacity: 0.85;
     }
     .sec-label::before {
       content: '';
@@ -331,17 +384,18 @@
     .tag {
       padding: 6px 14px;
       border-radius: 20px;
-      background: rgba(160,127,212,0.1);
-      border: 1px solid rgba(160,127,212,0.25);
+      background: rgba(64,196,255,0.10);
+      border: 1px solid rgba(64,196,255,0.30);
       font-size: 12px;
-      font-weight: 500;
-      color: var(--purple);
+      font-weight: 600;
+      color: var(--blue-hi);
+      letter-spacing: 0.3px;
     }
     /* quote box */
     .r-quote {
-      border-left: 3px solid var(--gold-dim);
+      border-left: 3px solid var(--blue);
       padding: 14px 16px;
-      background: rgba(212,168,92,0.06);
+      background: rgba(33,150,243,0.07);
       border-radius: 0 var(--r-sm) var(--r-sm) 0;
       font-size: 15px;
       color: var(--text-2);
@@ -351,8 +405,8 @@
     }
     /* quick review accent card */
     .r-quick {
-      background: rgba(160,127,212,0.1);
-      border: 1px solid rgba(160,127,212,0.2);
+      background: rgba(0,229,255,0.07);
+      border: 1px solid rgba(0,229,255,0.2);
       border-radius: var(--r-md);
       padding: 16px 18px;
       font-size: 14px;
@@ -366,7 +420,7 @@
       color: var(--text-2);
       margin-bottom: 0;
     }
-    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 24px 0; }
     /* sub-indices */
     .r-indices {
       display: grid;
@@ -376,15 +430,17 @@
     }
     .r-index-cell {
       background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: var(--r-md);
       padding: 16px 14px;
       text-align: center;
     }
     .r-index-lbl {
       font-size: 11px;
+      font-weight: 600;
       color: var(--text-3);
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       margin-bottom: 8px;
     }
     .r-index-num {
@@ -414,7 +470,7 @@
       align-items: center;
       gap: 14px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: var(--r-md);
       padding: 16px 18px;
       margin-bottom: 24px;
@@ -433,8 +489,8 @@
     }
     /* scenario */
     .r-scenario {
-      background: rgba(212,168,92,0.05);
-      border: 1px solid rgba(212,168,92,0.15);
+      background: rgba(184,255,87,0.05);
+      border: 1px solid rgba(184,255,87,0.15);
       border-radius: var(--r-md);
       padding: 16px 18px;
       font-size: 14px;
@@ -445,14 +501,15 @@
     /* share */
     .share-lbl {
       font-size: 10px;
-      letter-spacing: 2px;
+      font-weight: 600;
+      letter-spacing: 3px;
       text-transform: uppercase;
       color: var(--text-3);
       margin-bottom: 10px;
     }
     .share-box {
       background: rgba(255,255,255,0.025);
-      border: 1px dashed rgba(255,255,255,0.1);
+      border: 1px dashed rgba(255,255,255,0.12);
       border-radius: var(--r-sm);
       padding: 18px;
       font-size: 14px;
@@ -474,7 +531,7 @@
 
     @media (max-width: 390px) {
       .card      { padding: 28px 18px; }
-      .display   { font-size: 32px; }
+      .display   { font-size: 34px; }
       .question  { font-size: 17px; }
       .r-title   { font-size: 30px; }
       .opt       { font-size: 14px; padding: 16px 40px 16px 18px; }
@@ -1120,12 +1177,12 @@ function drawRadar(vals) {
   }
   ctx.closePath();
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-  grad.addColorStop(0, 'rgba(160,127,212,0.6)');
-  grad.addColorStop(1, 'rgba(212,168,92,0.35)');
+  grad.addColorStop(0, 'rgba(0,229,255,0.55)');
+  grad.addColorStop(1, 'rgba(83,109,254,0.35)');
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = '#d4a85c';
-  ctx.lineWidth   = 1.5;
+  ctx.strokeStyle = '#00e5ff';
+  ctx.lineWidth   = 2;
   ctx.stroke();
 
   // labels
@@ -1199,12 +1256,13 @@ function saveImage() {
   };
 
   const W = 750, PAD = 52, CW = W - PAD * 2;
+  const FONT_BODY = '26px sans-serif', LH_BODY = 40;
 
-  // ── helpers ──────────────────────────────────────
-  // draw on a temp 1×1 canvas just to measure text
+  // measure canvas — textBaseline='top' so y is always the top of the glyph
   const mc = document.createElement('canvas').getContext('2d');
+  mc.textBaseline = 'top';
 
-  function wrap(ctx, text, x, y, maxW, lineH, draw) {
+  function wrap(ctx, text, x, y, maxW, lineH) {
     let line = '', lines = [];
     for (const ch of [...text]) {
       const t = line + ch;
@@ -1212,12 +1270,20 @@ function saveImage() {
       else line = t;
     }
     if (line) lines.push(line);
-    if (draw !== false) lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineH));
+    lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineH));
     return lines.length * lineH;
   }
 
   function measureWrap(font, text, maxW, lineH) {
-    mc.font = font; return wrap(mc, text, 0, 0, maxW, lineH, false);
+    mc.font = font;
+    let line = '', lines = [];
+    for (const ch of [...text]) {
+      const t = line + ch;
+      if (mc.measureText(t).width > maxW && line) { lines.push(line); line = ch; }
+      else line = t;
+    }
+    if (line) lines.push(line);
+    return lines.length * lineH;
   }
 
   function rr(ctx, x, y, w, h, r) {
@@ -1228,68 +1294,59 @@ function saveImage() {
     ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
   }
 
-  // ── pre-measure variable-height sections ─────────
-  const FONT_BODY = '26px sans-serif';
-  const LH_BODY   = 40;
-  const descH     = measureWrap(FONT_BODY, d.desc, CW, LH_BODY);
-  const quoteH    = measureWrap('italic 26px sans-serif', d.quote, CW - 28, LH_BODY);
-  const quickH    = measureWrap('26px sans-serif', d.quick, CW - 32, LH_BODY);
-  const scenH     = measureWrap(FONT_BODY, d.scenario, CW - 32, LH_BODY);
+  const quoteH    = measureWrap('italic 26px sans-serif', d.quote,    CW - 28,  LH_BODY);
+  const quickH    = measureWrap('26px sans-serif',         d.quick,    CW - 32,  LH_BODY);
+  const descH     = measureWrap(FONT_BODY,                 d.desc,     CW,       LH_BODY);
+  const scenH     = measureWrap(FONT_BODY,                 d.scenario, CW - 32,  LH_BODY);
   const shareLines = d.share.split('\n');
 
-  // ── calculate total canvas height ────────────────
-  const TOTAL_H =
-    72 + 96 + 32 + 60 + 72 +           // top pad + icon + en + title + gap
-    40 +                                // hero divider
-    50 + 36 +                           // tags row + gap
-    (quoteH + 44) + 32 +               // quote box + gap
-    36 + (quickH + 40) + 40 +          // sec-label + quick box + gap
-    1 + 40 +                           // divider + gap
-    36 + descH + 40 +                  // sec-label + desc + gap
-    1 + 40 +                           // divider + gap
-    36 + 148 + 40 +                    // sec-label + indices + gap
-    36 + 260 + 40 +                    // sec-label + radar + gap
-    1 + 40 +                           // divider + gap
-    36 + 108 + 40 +                    // sec-label + compat + gap
-    36 + (scenH + 40) + 40 +           // sec-label + scenario + gap
-    1 + 40 +                           // divider + gap
-    28 + (shareLines.length * 36 + 44) + 60 + // share label + box + bottom
-    60;                                // watermark + padding
-
-  // ── create canvas ────────────────────────────────
+  // draw onto an oversized canvas, then crop to actual content
   const cv = document.createElement('canvas');
-  cv.width  = W;
-  cv.height = TOTAL_H;
+  cv.width = W; cv.height = 3200;
   const c = cv.getContext('2d');
+  c.textBaseline = 'top'; // ← single baseline set, never changes
 
   // background
-  const bg = c.createLinearGradient(0, 0, 0, TOTAL_H);
-  bg.addColorStop(0, '#0e0920'); bg.addColorStop(1, '#09060f');
-  c.fillStyle = bg; c.fillRect(0, 0, W, TOTAL_H);
+  const bg = c.createLinearGradient(0, 0, 0, 3200);
+  bg.addColorStop(0, '#0a0618'); bg.addColorStop(0.5, '#07050e'); bg.addColorStop(1, '#0a0618');
+  c.fillStyle = bg; c.fillRect(0, 0, W, 3200);
+  // subtle radial glow top-left
+  const glow1 = c.createRadialGradient(W*0.15, 80, 0, W*0.15, 80, W*0.7);
+  glow1.addColorStop(0, 'rgba(120,40,220,0.28)'); glow1.addColorStop(1, 'transparent');
+  c.fillStyle = glow1; c.fillRect(0, 0, W, 3200);
+  // subtle radial glow bottom-right
+  const glow2 = c.createRadialGradient(W*0.85, 600, 0, W*0.85, 600, W*0.6);
+  glow2.addColorStop(0, 'rgba(83,109,254,0.22)'); glow2.addColorStop(1, 'transparent');
+  c.fillStyle = glow2; c.fillRect(0, 0, W, 3200);
 
-  // top gold strip
-  const topStrip = c.createLinearGradient(0, 0, W, 0);
-  topStrip.addColorStop(0, 'transparent'); topStrip.addColorStop(0.2, '#d4a85c');
-  topStrip.addColorStop(0.8, '#d4a85c');  topStrip.addColorStop(1, 'transparent');
-  c.fillStyle = topStrip; c.fillRect(0, 0, W, 3);
+  // top neon strip
+  const strip = c.createLinearGradient(0, 0, W, 0);
+  strip.addColorStop(0, 'transparent'); strip.addColorStop(0.2, '#2196f3');
+  strip.addColorStop(0.5, '#00e5ff');   strip.addColorStop(0.8, '#536dfe');
+  strip.addColorStop(1, 'transparent');
+  c.fillStyle = strip; c.fillRect(0, 0, W, 3);
 
-  let y = 72;
+  let y = 56;
 
   // ── hero ─────────────────────────────────────────
-  c.font = '88px serif'; c.textAlign = 'center'; c.fillStyle = '#fff';
-  c.fillText(d.icon, W/2, y + 84); y += 96;
+  c.font = '80px serif'; c.textAlign = 'center'; c.fillStyle = '#fff';
+  c.fillText(d.icon, W/2, y); y += 92;
 
-  c.font = 'bold 28px sans-serif'; c.fillStyle = '#d4a85c';
-  c.fillText(d.en, W/2, y + 28); y += 36;
+  // title gradient text via clip
+  const tg = c.createLinearGradient(W*0.2, 0, W*0.8, 0);
+  tg.addColorStop(0, '#40c4ff'); tg.addColorStop(0.5, '#536dfe'); tg.addColorStop(1, '#00e5ff');
+  c.font = 'bold 48px sans-serif'; c.fillStyle = tg;
+  c.fillText(d.title, W/2, y); y += 60;
 
-  c.font = 'bold 54px sans-serif'; c.fillStyle = '#fff';
-  c.fillText(d.title, W/2, y + 54); y += 72;
+  c.font = '500 13px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.35)';
+  c.fillText(d.en, W/2, y); y += 28;
 
+  y += 20;
   const hd = c.createLinearGradient(W*0.2, 0, W*0.8, 0);
-  hd.addColorStop(0,'transparent'); hd.addColorStop(0.5,'rgba(212,168,92,0.5)'); hd.addColorStop(1,'transparent');
+  hd.addColorStop(0,'transparent'); hd.addColorStop(0.5,'rgba(0,229,255,0.45)'); hd.addColorStop(1,'transparent');
   c.strokeStyle = hd; c.lineWidth = 1;
   c.beginPath(); c.moveTo(W*0.2, y); c.lineTo(W*0.8, y); c.stroke();
-  y += 40;
+  y += 32;
 
   // ── tags ─────────────────────────────────────────
   c.textAlign = 'left';
@@ -1298,52 +1355,60 @@ function saveImage() {
     c.font = '500 23px sans-serif';
     const tw = c.measureText(tag).width + 28;
     c.save(); rr(c, tx, y, tw, 38, 19);
-    c.fillStyle = 'rgba(160,127,212,0.15)'; c.fill();
-    c.strokeStyle = 'rgba(160,127,212,0.3)'; c.lineWidth = 1; c.stroke(); c.restore();
-    c.fillStyle = '#a07fd4'; c.fillText(tag, tx + 14, y + 26); tx += tw + 10;
+    c.fillStyle = 'rgba(64,196,255,0.12)'; c.fill();
+    c.strokeStyle = 'rgba(64,196,255,0.35)'; c.lineWidth = 1; c.stroke(); c.restore();
+    c.fillStyle = '#80d8ff';
+    // center tag text vertically in the 38px pill (38-23)/2 ≈ 8 from top
+    c.fillText(tag, tx + 14, y + 8); tx += tw + 10;
   });
-  y += 50 + 36;
+  y += 38 + 28;
 
   // ── quote ────────────────────────────────────────
   const qBoxH = quoteH + 44;
   c.save(); rr(c, PAD, y, CW, qBoxH, 12);
-  c.fillStyle = 'rgba(212,168,92,0.06)'; c.fill(); c.restore();
-  c.fillStyle = '#d4a85c'; c.fillRect(PAD, y, 4, qBoxH);
-  c.font = 'italic 26px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.75)';
-  wrap(c, d.quote, PAD + 20, y + 32, CW - 28, LH_BODY);
-  y += qBoxH + 32;
+  c.fillStyle = 'rgba(33,150,243,0.07)'; c.fill(); c.restore();
+  c.fillStyle = '#40c4ff'; c.fillRect(PAD, y, 4, qBoxH);
+  c.font = 'italic 26px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.75)';
+  wrap(c, d.quote, PAD + 20, y + 22, CW - 28, LH_BODY);
+  y += qBoxH + 28;
 
   // ── quick review ─────────────────────────────────
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('酒品速评', PAD + 14, y + 18); y += 36 + 4;
+  const secG = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG.addColorStop(0, '#2196f3'); secG.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('酒品速评', PAD + 14, y); y += 36;
   const qkBoxH = quickH + 40;
   c.save(); rr(c, PAD, y, CW, qkBoxH, 12);
-  c.fillStyle = 'rgba(160,127,212,0.12)'; c.fill();
-  c.strokeStyle = 'rgba(160,127,212,0.2)'; c.lineWidth = 1; c.stroke(); c.restore();
-  c.font = '26px sans-serif'; c.fillStyle = '#c0a0e8';
-  wrap(c, d.quick, PAD + 16, y + 30, CW - 32, LH_BODY);
-  y += qkBoxH + 40;
+  c.fillStyle = 'rgba(0,229,255,0.07)'; c.fill();
+  c.strokeStyle = 'rgba(0,229,255,0.2)'; c.lineWidth = 1; c.stroke(); c.restore();
+  c.font = '26px sans-serif'; c.fillStyle = 'rgba(160,240,255,0.9)';
+  wrap(c, d.quick, PAD + 16, y + 20, CW - 32, LH_BODY);
+  y += qkBoxH + 36;
 
-  // divider
+  // ── divider ──────────────────────────────────────
   c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
-  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 36;
 
   // ── description ──────────────────────────────────
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('人格解读', PAD + 14, y + 18); y += 36 + 4;
-  c.font = FONT_BODY; c.fillStyle = 'rgba(239,230,212,0.65)';
-  wrap(c, d.desc, PAD, y, CW, LH_BODY); y += descH + 40;
+  const secG2 = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG2.addColorStop(0, '#2196f3'); secG2.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG2; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('人格解读', PAD + 14, y); y += 36;
+  c.font = FONT_BODY; c.fillStyle = 'rgba(240,236,255,0.65)';
+  wrap(c, d.desc, PAD, y, CW, LH_BODY); y += descH + 36;
 
-  // divider
+  // ── divider ──────────────────────────────────────
   c.strokeStyle = 'rgba(255,255,255,0.08)';
-  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 36;
 
   // ── indices ──────────────────────────────────────
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('你的两个指数', PAD + 14, y + 18); y += 36 + 4;
+  const secG3 = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG3.addColorStop(0, '#2196f3'); secG3.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG3; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('你的两个指数', PAD + 14, y); y += 36;
   const cellW = (CW - 16) / 2, cellH = 148;
   [['外放度', d.ext, d.extDesc], ['感性度', d.sen, d.senDesc]].forEach(([lbl, num, desc], i) => {
     const cx2 = PAD + i * (cellW + 16);
@@ -1351,90 +1416,102 @@ function saveImage() {
     c.fillStyle = 'rgba(255,255,255,0.04)'; c.fill();
     c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1; c.stroke(); c.restore();
     c.textAlign = 'center';
-    c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.3)';
-    c.fillText(lbl, cx2 + cellW/2, y + 32);
-    const ng = c.createLinearGradient(cx2, y+50, cx2+cellW, y+110);
-    ng.addColorStop(0,'#c88a48'); ng.addColorStop(1,'#9b72cf');
-    c.font = 'bold 58px sans-serif'; c.fillStyle = ng;
-    c.fillText(num, cx2 + cellW/2, y + 104);
-    c.font = '20px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.28)';
-    c.fillText(desc, cx2 + cellW/2, y + 132);
+    c.font = '22px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.3)';
+    c.fillText(lbl, cx2 + cellW/2, y + 12);
+    const ng = c.createLinearGradient(cx2, y+44, cx2+cellW, y+104);
+    ng.addColorStop(0,'#40c4ff'); ng.addColorStop(1,'#00e5ff');
+    c.font = 'bold 56px sans-serif'; c.fillStyle = ng;
+    c.fillText(num, cx2 + cellW/2, y + 44);
+    c.font = '20px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.28)';
+    c.fillText(desc, cx2 + cellW/2, y + 114);
   });
-  y += cellH + 40;
+  y += cellH + 36;
 
   // ── radar ────────────────────────────────────────
   c.textAlign = 'left';
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('酒感雷达', PAD + 14, y + 18); y += 36 + 4;
+  const secG4 = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG4.addColorStop(0, '#2196f3'); secG4.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG4; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('酒感雷达', PAD + 14, y); y += 36;
   const radarSrc = document.getElementById('r-radar');
-  c.drawImage(radarSrc, (W - 260) / 2, y, 260, 260); y += 260 + 40;
+  c.drawImage(radarSrc, (W - 260) / 2, y, 260, 260); y += 260 + 36;
 
-  // divider
+  // ── divider ──────────────────────────────────────
   c.strokeStyle = 'rgba(255,255,255,0.08)';
-  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 36;
 
   // ── compat ───────────────────────────────────────
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('你的搭子酒', PAD + 14, y + 18); y += 36 + 4;
-  const cpH = 108;
+  const secG5 = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG5.addColorStop(0, '#2196f3'); secG5.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG5; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('你的搭子酒', PAD + 14, y); y += 36;
+  const cpH = 112;
   c.save(); rr(c, PAD, y, CW, cpH, 16);
   c.fillStyle = 'rgba(255,255,255,0.04)'; c.fill();
   c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1; c.stroke(); c.restore();
-  c.font = '54px serif'; c.textAlign = 'left'; c.fillStyle = '#fff';
-  c.fillText(d.compatIcon, PAD + 20, y + 72);
-  c.font = 'bold 28px sans-serif'; c.fillStyle = '#fff';
-  c.fillText(d.compatName, PAD + 92, y + 44);
-  c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.4)';
-  wrap(c, d.compatWhy, PAD + 92, y + 72, CW - 112, 32);
-  y += cpH + 40;
+  c.font = '52px serif'; c.textAlign = 'left'; c.fillStyle = '#fff';
+  c.fillText(d.compatIcon, PAD + 20, y + 12);
+  c.font = 'bold 26px sans-serif'; c.fillStyle = '#fff';
+  c.fillText(d.compatName, PAD + 90, y + 12);
+  c.font = '22px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.4)';
+  wrap(c, d.compatWhy, PAD + 90, y + 46, CW - 110, 32);
+  y += cpH + 36;
 
   // ── scenario ─────────────────────────────────────
-  c.fillStyle = '#a07fd4'; c.fillRect(PAD, y, 4, 22);
-  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.55)';
-  c.fillText('典型场景', PAD + 14, y + 18); y += 36 + 4;
+  const secG6 = c.createLinearGradient(PAD, y, PAD + 4, y + 24);
+  secG6.addColorStop(0, '#2196f3'); secG6.addColorStop(1, '#00e5ff');
+  c.fillStyle = secG6; c.fillRect(PAD, y, 4, 24);
+  c.font = '600 24px sans-serif'; c.fillStyle = 'rgba(0,229,255,0.75)';
+  c.fillText('典型场景', PAD + 14, y); y += 36;
   const scBoxH = scenH + 40;
   c.save(); rr(c, PAD, y, CW, scBoxH, 12);
-  c.fillStyle = 'rgba(212,168,92,0.05)'; c.fill();
-  c.strokeStyle = 'rgba(212,168,92,0.15)'; c.lineWidth = 1; c.stroke(); c.restore();
-  c.font = FONT_BODY; c.fillStyle = 'rgba(239,230,212,0.65)';
-  wrap(c, d.scenario, PAD + 16, y + 30, CW - 32, LH_BODY);
-  y += scBoxH + 40;
+  c.fillStyle = 'rgba(184,255,87,0.05)'; c.fill();
+  c.strokeStyle = 'rgba(184,255,87,0.15)'; c.lineWidth = 1; c.stroke(); c.restore();
+  c.font = FONT_BODY; c.fillStyle = 'rgba(240,236,255,0.65)';
+  wrap(c, d.scenario, PAD + 16, y + 20, CW - 32, LH_BODY);
+  y += scBoxH + 36;
 
-  // divider
+  // ── divider ──────────────────────────────────────
   c.strokeStyle = 'rgba(255,255,255,0.08)';
-  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 40;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke(); y += 36;
 
   // ── share text ───────────────────────────────────
-  c.font = '22px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.3)';
-  c.fillText('分享文案', PAD, y + 18); y += 28 + 8;
+  c.font = '22px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.3)';
+  c.fillText('分享文案', PAD, y); y += 28 + 8;
   const shBoxH = shareLines.length * 36 + 44;
   c.save(); rr(c, PAD, y, CW, shBoxH, 12);
   c.fillStyle = 'rgba(255,255,255,0.025)'; c.fill();
-  c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
+  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1;
   c.setLineDash([6, 4]); c.stroke(); c.setLineDash([]); c.restore();
-  c.font = '24px sans-serif'; c.fillStyle = 'rgba(239,230,212,0.6)';
-  shareLines.forEach((line, i) => c.fillText(line, PAD + 20, y + 34 + i * 36));
-  y += shBoxH + 48;
+  c.font = '24px sans-serif'; c.fillStyle = 'rgba(240,236,255,0.6)';
+  shareLines.forEach((line, i) => c.fillText(line, PAD + 20, y + 22 + i * 36));
+  y += shBoxH + 40;
 
   // ── watermark ────────────────────────────────────
   c.textAlign = 'center';
-  c.font = '22px sans-serif'; c.fillStyle = 'rgba(255,255,255,0.18)';
-  c.fillText('酒品人格测试  ·  你是哪杯酒？', W/2, y + 20); y += 44;
+  c.font = '600 22px sans-serif'; c.fillStyle = 'rgba(255,255,255,0.2)';
+  c.fillText('酒品人格测试  ·  你是哪杯酒？', W/2, y); y += 32;
 
-  // bottom gold strip
-  c.fillStyle = topStrip; c.fillRect(0, y, W, 3);
+  // bottom neon strip (same as top)
+  c.fillStyle = strip; c.fillRect(0, y, W, 3);
+
+  const finalH = y + 12;
+
+  // crop to actual content height
+  const out = document.createElement('canvas');
+  out.width = W; out.height = finalH;
+  out.getContext('2d').drawImage(cv, 0, 0, W, finalH, 0, 0, W, finalH);
 
   // ── export ───────────────────────────────────────
-  cv.toBlob(blob => {
+  out.toBlob(blob => {
     const file = new File([blob], `酒品人格-${d.title}.png`, { type: 'image/png' });
     const finish = (label) => {
       btn.textContent = label;
       btn.disabled = false;
       setTimeout(() => { btn.textContent = '保存结果图片'; }, 2500);
     };
-    // On mobile (iOS/Android), share sheet lets user tap "存储图像"
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       navigator.share({ files: [file], title: '我的酒品人格' })
         .then(() => finish('已分享 ✓'))
@@ -1457,14 +1534,14 @@ function dlImage(blob, title, finish) {
    Share test link
 ───────────────────────────────────────── */
 function shareTest() {
-  const title = document.getElementById('r-title').textContent;
-  const shareText = document.getElementById('r-share').textContent;
+  const btn = document.getElementById('btn-share');
+  const link = location.href;
   const shareData = {
     title: '酒品人格测试 — 你是哪杯酒？',
-    text:  shareText,
+    text:  '来测测你是哪杯酒！12道题，找到属于你的那瓶微醺 🍹',
+    url:   link,
   };
 
-  const btn = document.getElementById('btn-share');
   const done = () => {
     btn.textContent = '已复制链接 ✓';
     btn.disabled = false;
@@ -1478,13 +1555,11 @@ function shareTest() {
       setTimeout(() => { btn.textContent = '分享给朋友'; }, 2500);
     }).catch(() => {});
   } else {
-    // fallback: copy share text + page URL
-    const text = shareText + '\n' + location.href;
     btn.disabled = true;
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(done).catch(() => legacyCopy(text, done));
+      navigator.clipboard.writeText(link).then(done).catch(() => legacyCopy(link, done));
     } else {
-      legacyCopy(text, done);
+      legacyCopy(link, done);
     }
   }
 }
